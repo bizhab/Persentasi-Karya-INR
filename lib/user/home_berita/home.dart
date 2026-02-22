@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:persentasi_karya/category/category.dart';
 import 'package:persentasi_karya/category/data.dart';
-import 'package:persentasi_karya/user/home%20berita/tampilan_isi_berita/tampilan%20isi%20berita.dart';
+import 'package:persentasi_karya/user/home_berita/tampilan_isi_berita/tampilan%20isi%20berita.dart';
 
 class HomeUser extends StatefulWidget {
   const HomeUser({super.key});

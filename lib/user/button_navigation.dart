@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:persentasi_karya/user/database%20warga/Nama_warga.dart';
-import 'package:persentasi_karya/user/home%20berita/home.dart';
+import 'package:persentasi_karya/user/database_warga/Nama_warga.dart';
+import 'package:persentasi_karya/user/home_berita/home.dart';
 import 'package:persentasi_karya/user/profile/profile.dart';
 
 class Buttonbarutama extends StatefulWidget {
