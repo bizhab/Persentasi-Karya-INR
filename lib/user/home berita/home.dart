@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:persentasi_karya/category/category.dart';
 import 'package:persentasi_karya/category/data.dart';
+import 'package:persentasi_karya/user/home%20berita/tampilan%20isi%20berita.dart';
 
 class HomeUser extends StatefulWidget {
   const HomeUser({super.key});
@@ -132,42 +133,52 @@ class _HomeUserState extends State<HomeUser> {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: filteredData.length,
                   itemBuilder: (context, index) {
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 20),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF5F5F5),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(15),
-                              child: Image.network(
-                                filteredData[index]['image']!,
-                                height: 150,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
+                    return GestureDetector(
+                      onTap: () {
+                        // Fungsi untuk berpindah halaman sambil membawa data berita yang diklik
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DetailBerita(data: filteredData[index]),),
+                        );
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF5F5F5),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(15),
+                                child: Image.network(
+                                  filteredData[index]['image']!,
+                                  height: 150,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              filteredData[index]['category']!,
-                              style: const TextStyle(color: Color(0xFF970747), fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              filteredData[index]['title']!,
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              filteredData[index]['description']!,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: Colors.grey),
-                            ),
-                          ],
+                              const SizedBox(height: 10),
+                              Text(
+                                filteredData[index]['category']!,
+                                style: const TextStyle(color: Color(0xFF970747), fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                filteredData[index]['title']!,
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                filteredData[index]['description']!,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(color: Colors.grey),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );
