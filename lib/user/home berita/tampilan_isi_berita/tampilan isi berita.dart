@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:persentasi_karya/user/home%20berita/tampilan_isi_berita/bottombar_donasi.dart';
 
 class DetailBerita extends StatelessWidget {
   final Map<String, String> data; 
@@ -9,10 +10,10 @@ class DetailBerita extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        // Menambahkan tombol kembali secara manual
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20), // Ikon lebih minimalis
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20), 
           onPressed: () {
             Navigator.pop(context); // Fungsi untuk kembali ke halaman sebelumnya
           },
@@ -63,12 +64,15 @@ class DetailBerita extends StatelessWidget {
               data['description']!, 
               style: GoogleFonts.poppins(fontSize: 16, height: 1.5),
             ),
-                ], // Kurung penutup tidak sejajar dengan pembukanya
+                ],
               ),
             ),
           ],
         ),
       ),
+      bottomNavigationBar: data['category']?.toUpperCase() == "DONASI" 
+          ? const DonationBottomBar() 
+          : null,
     );
   }
 }

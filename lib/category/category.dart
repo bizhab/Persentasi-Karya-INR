@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-final List<String> categories = ['SEMUA', 'WARGA', 'TEKNOLOGI', 'LAYANAN', 'EKONOMI', 'PEMBANGUNAN', 'INFO'];
+final List<String> categories = ['SEMUA', 'WARGA', 'TEKNOLOGI', 'LAYANAN', 'EKONOMI', 'PEMBANGUNAN', 'INFO', 'DONASI', 'KEAMANAN', 'KESEHATAN', 'PENDIDIKAN', 'BUDAYA', 'LINGKUNGAN'];
 int selectedCategoryIndex = 0;
 
 void showCategorySheet(BuildContext context) {

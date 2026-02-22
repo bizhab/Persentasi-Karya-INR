@@ -47,4 +47,12 @@ final List<Map<String, String>> culinaryData = [
     'description': 'Seorang warga melaporkan kehilangan kunci motor dengan gantungan kunci karakter Toak.',
     'recipe': '1. Lokasi terakhir: Area parkir Masjid Al-Ikhlas.\n2. Waktu kejadian: Shalat Maghrib tadi malam.\n3. Ciri-ciri: Gantungan boneka kecil warna merah.\n4. Bagi yang menemukan harap hubungi Pos Keamanan.\n5. Akan diberikan imbalan sepantasnya bagi penemu.'
   },
+  {
+    'title': 'Laporan Kehilangan: Kunci Motor di Sekitar Masjid',
+    'image': 'https://images.unsplash.com/photo-1582139329536-e7284fece509?q=80&w=500',
+    'category': 'DONASI',
+    'rating': 'Urgent',
+    'description': 'Seorang warga melaporkan kehilangan kunci motor dengan gantungan kunci karakter Toak.',
+    'recipe': '1. Lokasi terakhir: Area parkir Masjid Al-Ikhlas.\n2. Waktu kejadian: Shalat Maghrib tadi malam.\n3. Ciri-ciri: Gantungan boneka kecil warna merah.\n4. Bagi yang menemukan harap hubungi Pos Keamanan.\n5. Akan diberikan imbalan sepantasnya bagi penemu.'
+  },
 ];
