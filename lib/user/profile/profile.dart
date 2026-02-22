@@ -1,9 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:persentasi_karya/user/database%20warga/buildcard.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
+
+void _openWhatsApp() async {
+  var phoneNumber = "62895339900947"; // Ganti dengan nomor Admin (awali dengan 62)
+  var message = "Halo Admin Toak Digital, saya ingin bertanya...";
+  var url = "https://wa.me/$phoneNumber?text=${Uri.parse(message)}";
+
+  if (await canLaunchUrl(Uri.parse(url))) {
+    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+  } else {
+    throw 'Tidak dapat membuka WhatsApp';
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -106,27 +119,18 @@ class ProfilePage extends StatelessWidget {
             ),
           ),
           
-          const SizedBox(height: 30),
-          
-          // Tombol Logout atau Edit Profile
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF970747),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                ),
-                child: Text("Edit Profil", style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-              ),
-            ),
-          ),
+          const SizedBox(height: 30),        
         ],
+        
       ),
+      
     ),
+    floatingActionButton: FloatingActionButton.extended(
+      onPressed: _openWhatsApp,
+      backgroundColor: const Color(0xFF25D366),
+      icon: const Icon(Icons.wallet, color: Colors.white),
+      label: Text("Hubungi Admin", style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+),
     );
   }
 }
