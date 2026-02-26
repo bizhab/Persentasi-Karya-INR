@@ -14,7 +14,6 @@ class TambahBeritaPage extends StatefulWidget {
 }
 
 class _TambahBeritaPageState extends State<TambahBeritaPage> {
-  final supabase = Supabase.instance.client; // Inisialisasi Supabase
 
   final _formKey = GlobalKey<FormState>();
   String? selectedCategory;
@@ -135,49 +134,52 @@ class _TambahBeritaPageState extends State<TambahBeritaPage> {
                 child: ElevatedButton(
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      if (_imageFile == null) {
+                      if (selectedCategory == null) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Pilih gambar terlebih dahulu!")),
+                          const SnackBar(content: Text("Pilih kategori terlebih dahulu!")),
                         );
                         return;
                       }
 
-                      // --- LOGIKA SIMPAN KE SUPABASE ---
-                      try {
-                        // 1. Upload ke Storage
-                        final fileName = DateTime.now().millisecondsSinceEpoch.toString();
-                        final path = 'berita/$fileName.jpg';
-                        await supabase.storage.from('gambar_berita').upload(path, _imageFile!);
-                        
-                        // 2. Ambil Publik URL
-                        final imageUrl = supabase.storage.from('gambar_berita').getPublicUrl(path);
+                      // Tampilkan loading dialog sederhana (Opsional tapi Best Practice)
+                      showDialog(
+                        context: context, 
+                        barrierDismissible: false, 
+                        builder: (context) => const Center(child: CircularProgressIndicator())
+                      );
 
-                        // 3. Simpan Teks Ke Tabel Berita
+                      try {
+                        final supabase = Supabase.instance.client;
+                        
+                        // Logika INSERT (CREATE)
                         await supabase.from('berita').insert({
-                          'judul': _judulController.text,
-                          'kategori': selectedCategory,
-                          'deskripsi': _deskripsiController.text,
-                          'image_url': imageUrl,
+                          'title': _judulController.text,
+                          'description': _deskripsiController.text,
+                          'category': selectedCategory,
+                          'image': 'https://via.placeholder.com/150', // Dummy image URL untuk kecepatan iterasi saat ini
                         });
 
+                        Navigator.pop(context); // Tutup loading dialog
+                        Navigator.pop(context); // Kembali ke Home Admin
+                        
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Berita Berhasil Disimpan!")),
+                          const SnackBar(content: Text("Berita berhasil ditambahkan!")),
                         );
-                        Navigator.pop(context);
                       } catch (e) {
-                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Gagal menyimpan berita: $e")),
+                        Navigator.pop(context); // Tutup loading dialog
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Terjadi kesalahan: $e")),
                         );
                       }
                     }
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF970747),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  ),
                   child: Text(
                     "Simpan Berita",
-                    style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                    style: GoogleFonts.poppins(
+                      fontSize: 16, 
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white, // Sesuaikan warna jika perlu
+                    ),
                   ),
                 ),
               ),

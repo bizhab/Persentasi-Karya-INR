@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:persentasi_karya/category/category.dart'; // Import kategori kamu
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EditBeritaPage extends StatefulWidget {
-  final Map<String, String> dataAwal; // Menerima data yang akan diedit
+  final Map<String, dynamic> dataAwal; // UBAH KE dynamic
 
   const EditBeritaPage({super.key, required this.dataAwal});
 
@@ -38,113 +39,170 @@ class _EditBeritaPageState extends State<EditBeritaPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          "Edit Berita",
-          style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        backgroundColor: const Color(0xFF970747),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildLabel("Judul Berita"),
-              TextFormField(
-                controller: _judulController,
-                decoration: _inputDecoration("Masukkan judul berita..."),
-              ),
-
-              const SizedBox(height: 20),
-
-              _buildLabel("Gambar Berita (Klik untuk ganti)"),
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: Image.network(
-                      widget.dataAwal['image']!,
-                      height: 180,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Container(
-                    height: 180,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.camera_alt, color: Colors.white, size: 40),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              _buildLabel("Kategori Berita"),
-              DropdownButtonFormField<String>(
-                value: selectedCategory,
-                items: categories.map((String category) {
-                  return DropdownMenuItem<String>(
-                    value: category,
-                    child: Text(category),
-                  );
-                }).toList(),
-                onChanged: (newValue) {
-                  setState(() {
-                    selectedCategory = newValue;
-                  });
-                },
-                decoration: _inputDecoration("Pilih Kategori"),
-              ),
-
-              const SizedBox(height: 20),
-
-              _buildLabel("Deskripsi Berita"),
-              TextFormField(
-                controller: _deskripsiController,
-                maxLines: 8,
-                decoration: _inputDecoration("Tulis isi berita..."),
-              ),
-
-              const SizedBox(height: 40),
-
-              // Tombol Update
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Logika simpan perubahan
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF970747),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  ),
-                  child: Text(
-                    "Simpan Perubahan",
-                    style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ],
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+            onPressed: () => Navigator.pop(context),
           ),
+          title: Text(
+            "Edit Berita",
+            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+          backgroundColor: const Color(0xFF970747),
+          centerTitle: true,
         ),
-      ),
-    );
+        body: Container(
+          child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20.0),
+              child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                          child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildLabel("Judul Berita"),
+                          TextFormField(
+                            controller: _judulController,
+                            decoration: _inputDecoration("Masukkan judul berita..."),
+                          ),
+                        ],
+                      )),
+                      SizedBox(height: 20),
+                      Container(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildLabel("Gambar Berita (Klik untuk ganti)"),
+                            Container(
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(15),
+                                      child: Image.network(
+                                        widget.dataAwal['image']!,
+                                        height: 180,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    height: 180,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    child: Center(
+                                      child: Icon(Icons.camera_alt, color: Colors.white, size: 40),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        height: 15,
+                      ),
+                      Container(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildLabel("Kategori Berita"),
+                            Container(
+                              child: DropdownButtonFormField<String>(
+                                value: selectedCategory,
+                                items: categories.map((String category) {
+                                  return DropdownMenuItem<String>(
+                                    value: category,
+                                    child: Text(category),
+                                  );
+                                }).toList(),
+                                onChanged: (newValue) {
+                                  setState(() {
+                                    selectedCategory = newValue;
+                                  });
+                                },
+                                decoration: _inputDecoration("Pilih Kategori"),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 25),
+                      Container(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildLabel("Deskripsi Berita"),
+                            TextFormField(
+                              controller: _deskripsiController,
+                              maxLines: 8,
+                              decoration: _inputDecoration("Tulis isi berita..."),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 35),
+                      Container(
+                        width: double.infinity,
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 55,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              if (_formKey.currentState!.validate()) {
+                                showDialog(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder: (context) => Center(
+                                          child: CircularProgressIndicator(),
+                                        ));
+
+                                try {
+                                  final supabase = Supabase.instance.client;
+
+                                  await supabase.from('berita').update({
+                                    'title': _judulController.text,
+                                    'description': _deskripsiController.text,
+                                    'category': selectedCategory,
+                                  }).eq('id', widget.dataAwal['id']);
+
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text("Berita berhasil diperbarui!")),
+                                  );
+                                } catch (e) {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("Gagal memperbarui: $e")),
+                                  );
+                                }
+                              }
+                            },
+                            child: Text(
+                              "Perbarui Berita",
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ))),
+        ));
   }
 
   Widget _buildLabel(String text) {

@@ -29,26 +29,23 @@ void tampilkanDialogHapus({
               style: GoogleFonts.poppins(color: Colors.grey),
             ),
           ),
-          // Tombol Hapus
+          
+          // Tombol Hapus (Diperbaiki)
           ElevatedButton(
-            onPressed: () {
-              aksiHapus(); // Jalankan fungsi hapus yang dikirim
-              Navigator.pop(context); // Tutup dialog
-              
-              // Berikan feedback ke user
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Data berhasil dihapus"),
-                  backgroundColor: Colors.redAccent,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              backgroundColor: Colors.red, // Warna merah identik dengan hapus
             ),
-            child: const Text("Hapus", style: TextStyle(color: Colors.white)),
+            onPressed: () {
+              Navigator.pop(context); // Tutup dialog dulu
+              aksiHapus(); // Jalankan fungsi hapus yang dikirim dari luar
+            },
+            child: Text(
+              "Hapus",
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
           ),
         ],
       );
