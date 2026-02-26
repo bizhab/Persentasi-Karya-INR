@@ -1,5 +1,9 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart'; // Import Image Picker
+import 'package:supabase_flutter/supabase_flutter.dart'; // Import Supabase
 import 'package:persentasi_karya/category/category.dart';
 
 class TambahBeritaPage extends StatefulWidget {
@@ -10,11 +14,25 @@ class TambahBeritaPage extends StatefulWidget {
 }
 
 class _TambahBeritaPageState extends State<TambahBeritaPage> {
-  // Controller untuk mengambil data dari inputan
+  final supabase = Supabase.instance.client; // Inisialisasi Supabase
+
   final _formKey = GlobalKey<FormState>();
   String? selectedCategory;
   final TextEditingController _judulController = TextEditingController();
   final TextEditingController _deskripsiController = TextEditingController();
+  
+  File? _imageFile; // Variabel penampung gambar
+  
+  // Fungsi Pick Image
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _imageFile = File(image.path);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,42 +57,53 @@ class _TambahBeritaPageState extends State<TambahBeritaPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. Input Judul
               _buildLabel("Judul Berita"),
               TextFormField(
                 controller: _judulController,
+                validator: (val) => val!.isEmpty ? 'Judul wajib diisi' : null,
                 decoration: _inputDecoration("Masukkan judul berita..."),
               ),
 
               const SizedBox(height: 20),
 
-              // 2. Input Gambar (Simulasi)
               _buildLabel("Gambar Berita"),
-              Container(
-                width: double.infinity,
-                height: 150,
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: Colors.grey[300]!),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.image_outlined, size: 50, color: Colors.grey[400]),
-                    const SizedBox(height: 10),
-                    Text("Klik untuk unggah gambar", style: TextStyle(color: Colors.grey[600])),
-                  ],
+              GestureDetector(
+                onTap: _pickImage, // Panggil Pick Image saat kotak ditekan
+                child: Container(
+                  width: double.infinity,
+                  height: 150,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: Colors.grey[300]!),
+                  ),
+                  child: _imageFile != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(15),
+                        // --- KODE YANG DIUBAH ---
+                        child: kIsWeb
+                            ? Image.network(_imageFile!.path, fit: BoxFit.cover, width: double.infinity)
+                            : Image.file(_imageFile!, fit: BoxFit.cover, width: double.infinity),
+                        // ------------------------
+                      )
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.image_outlined, size: 50, color: Colors.grey[400]),
+                            const SizedBox(height: 10),
+                            Text("Klik untuk unggah gambar", style: TextStyle(color: Colors.grey[600])),
+                          ],
+                        ),
                 ),
               ),
 
               const SizedBox(height: 20),
 
-              // 3. Dropdown Kategori
               _buildLabel("Kategori Berita"),
               DropdownButtonFormField<String>(
                 value: selectedCategory,
-                items: categories.map((String category) {
+                validator: (val) => val == null ? 'Kategori wajib dipilih' : null,
+                items: categories.where((c) => c != "Semua").map((String category) {
                   return DropdownMenuItem<String>(
                     value: category,
                     child: Text(category),
@@ -90,24 +119,56 @@ class _TambahBeritaPageState extends State<TambahBeritaPage> {
 
               const SizedBox(height: 20),
 
-              // 4. Input Deskripsi
               _buildLabel("Deskripsi Berita"),
               TextFormField(
                 controller: _deskripsiController,
+                validator: (val) => val!.isEmpty ? 'Deskripsi wajib diisi' : null,
                 maxLines: 5,
                 decoration: _inputDecoration("Tulis isi berita di sini..."),
               ),
 
               const SizedBox(height: 40),
 
-              // Tombol Simpan
               SizedBox(
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      // Logika simpan data di sini
+                      if (_imageFile == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Pilih gambar terlebih dahulu!")),
+                        );
+                        return;
+                      }
+
+                      // --- LOGIKA SIMPAN KE SUPABASE ---
+                      try {
+                        // 1. Upload ke Storage
+                        final fileName = DateTime.now().millisecondsSinceEpoch.toString();
+                        final path = 'berita/$fileName.jpg';
+                        await supabase.storage.from('gambar_berita').upload(path, _imageFile!);
+                        
+                        // 2. Ambil Publik URL
+                        final imageUrl = supabase.storage.from('gambar_berita').getPublicUrl(path);
+
+                        // 3. Simpan Teks Ke Tabel Berita
+                        await supabase.from('berita').insert({
+                          'judul': _judulController.text,
+                          'kategori': selectedCategory,
+                          'deskripsi': _deskripsiController.text,
+                          'image_url': imageUrl,
+                        });
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Berita Berhasil Disimpan!")),
+                        );
+                        Navigator.pop(context);
+                      } catch (e) {
+                         ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Gagal menyimpan berita: $e")),
+                        );
+                      }
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -127,7 +188,6 @@ class _TambahBeritaPageState extends State<TambahBeritaPage> {
     );
   }
 
-  // Helper untuk Label agar konsisten
   Widget _buildLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
@@ -138,7 +198,6 @@ class _TambahBeritaPageState extends State<TambahBeritaPage> {
     );
   }
 
-  // Helper untuk Style Input agar rapi
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       hintText: hint,

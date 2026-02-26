@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:persentasi_karya/user/home_berita/tampilan_isi_berita/bottombar_donasi.dart';
 
 class DetailBerita extends StatelessWidget {
-  final Map<String, String> data; 
+  final Map<String, dynamic> data;
 
   const DetailBerita({super.key, required this.data});
 

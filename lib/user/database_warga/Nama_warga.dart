@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:persentasi_karya/category/data_warga.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'; // Import Supabase
 
 class DataWarga extends StatefulWidget {
   const DataWarga({super.key});
@@ -10,38 +10,43 @@ class DataWarga extends StatefulWidget {
 }
 
 class _DataWargaState extends State<DataWarga> {
-  // 1. Controller untuk menangkap input pencarian
+  final supabase = Supabase.instance.client;
   final TextEditingController _searchController = TextEditingController();
   
-  // 2. List untuk menampung data yang sudah difilter
-  List<Map<String, String>> _foundWarga = [];
+  List<Map<String, dynamic>> _allWarga = []; // Penampung Data Utama
+  List<Map<String, dynamic>> _foundWarga = []; // Penampung Hasil Filter
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    // Inisialisasi data awal (menampilkan semua yang LOKAL & PINDAHAN)
-    _foundWarga = wargaData.where((item) {
-      return item['category'] == "LOKAL" || item['category'] == "PINDAHAN";
-    }).toList();
+    _fetchWarga(); // Panggil Fungsi saat Halaman Dimuat
   }
 
-  // 3. Fungsi logika pencarian
+  // --- FUNGSI AMBIL DATA DARI SUPABASE ---
+  Future<void> _fetchWarga() async {
+    try {
+      final data = await supabase.from('profil_warga').select();
+      setState(() {
+        _allWarga = List<Map<String, dynamic>>.from(data);
+        _foundWarga = _allWarga;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
+
   void _runFilter(String enteredKeyword) {
-    List<Map<String, String>> results = [];
+    List<Map<String, dynamic>> results = [];
     if (enteredKeyword.isEmpty) {
-      // Jika kosong, tampilkan semua lagi
-      results = wargaData.where((item) {
-        return item['category'] == "LOKAL" || item['category'] == "PINDAHAN";
-      }).toList();
+      results = _allWarga;
     } else {
-      // Filter berdasarkan nama (lowercase agar tidak sensitif huruf besar/kecil)
-      results = wargaData
+      results = _allWarga
           .where((user) =>
-              user["name"]!.toLowerCase().contains(enteredKeyword.toLowerCase()))
+              user["nama"]!.toString().toLowerCase().contains(enteredKeyword.toLowerCase()))
           .toList();
     }
-
-    // Perbarui UI
     setState(() {
       _foundWarga = results;
     });
@@ -57,7 +62,6 @@ class _DataWargaState extends State<DataWarga> {
             padding: const EdgeInsets.all(20.0),
             child: Column(
               children: [
-                // Bagian Logo
                 Row(
                   children: [
                     Image.asset(
@@ -79,7 +83,6 @@ class _DataWargaState extends State<DataWarga> {
                 ),
                 const SizedBox(height: 10),
 
-                // 4. Update Container Search menjadi TextField
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
@@ -87,7 +90,7 @@ class _DataWargaState extends State<DataWarga> {
                   ),
                   child: TextField(
                     controller: _searchController,
-                    onChanged: (value) => _runFilter(value), // Panggil fungsi filter saat mengetik
+                    onChanged: (value) => _runFilter(value),
                     decoration: const InputDecoration(
                       hintText: 'Cari nama warga...',
                       prefixIcon: Icon(Icons.search),
@@ -99,47 +102,48 @@ class _DataWargaState extends State<DataWarga> {
                 
                 const SizedBox(height: 20),
 
-                // 5. ListView menampilkan _foundWarga
-                _foundWarga.isNotEmpty
-                    ? ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _foundWarga.length,
-                        itemBuilder: (context, index) {
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 20),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF5F5F5),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    _foundWarga[index]['category']!,
-                                    style: const TextStyle(
-                                        color: Color(0xFF970747),
-                                        fontWeight: FontWeight.bold),
+                _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _foundWarga.isNotEmpty
+                        ? ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: _foundWarga.length,
+                            itemBuilder: (context, index) {
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 20),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF5F5F5),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(10.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 10),
+                                      Text(
+                                        _foundWarga[index]['role']?.toString().toUpperCase() ?? "WARGA", // Menggunakan Kolom Role jika kategori tdk ada
+                                        style: const TextStyle(
+                                            color: Color(0xFF970747),
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Text(
+                                        _foundWarga[index]['nama'] ?? "-",
+                                        style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
                                   ),
-                                  Text(
-                                    _foundWarga[index]['name']!,
-                                    style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      )
-                    : const Text(
-                        'Nama tidak ditemukan',
-                        style: TextStyle(fontSize: 16),
-                      ),
+                                ),
+                              );
+                            },
+                          )
+                        : const Text(
+                            'Nama tidak ditemukan',
+                            style: TextStyle(fontSize: 16),
+                          ),
               ],
             ),
           ),

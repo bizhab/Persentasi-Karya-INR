@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "546829217356",
+    "project_id": "karyatoak",
+    "storage_bucket": "karyatoak.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:546829217356:android:f4dd84bbbc5e8ac94e4ee9",
+        "android_client_info": {
+          "package_name": "com.example.mini_projek_sigaukuliner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "546829217356-0rr9lsplmhjoceqi4la6tl01ie38t7ub.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBxNsV-zABW7fL3LY3mq-0MjwnmccoY3g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "546829217356-0rr9lsplmhjoceqi4la6tl01ie38t7ub.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "546829217356-s8jadqem9jeb4qoqa0srt4r6rdchdf3e.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.miniProjekSigaukuliner"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:546829217356:android:cc9bef3477d7bc4e4e4ee9",
+        "android_client_info": {
+          "package_name": "com.example.persentasi_karya"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "546829217356-0rr9lsplmhjoceqi4la6tl01ie38t7ub.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBxNsV-zABW7fL3LY3mq-0MjwnmccoY3g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "546829217356-0rr9lsplmhjoceqi4la6tl01ie38t7ub.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "546829217356-s8jadqem9jeb4qoqa0srt4r6rdchdf3e.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.miniProjekSigaukuliner"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

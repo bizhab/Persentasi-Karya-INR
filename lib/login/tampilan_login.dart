@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:persentasi_karya/admin/bottom_navigation.dart';
 import 'package:persentasi_karya/login/ragister.dart';
 import 'package:persentasi_karya/user/button_navigation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'; // Tambahkan import Supabase
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -11,6 +13,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final supabase = Supabase.instance.client; // Inisialisasi Supabase
   TextEditingController userController = TextEditingController();
   TextEditingController passController = TextEditingController();
 
@@ -67,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
                       controller: userController,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
-                        labelText: "Username",
+                        labelText: "Email", // Diubah textnya jadi Email agar sesuai dengan auth supabase
                       ),
                     ),
                     SizedBox(height: 15),
@@ -81,15 +84,37 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     SizedBox(height: 25),
                     GestureDetector(
-                      onTap: () {
-                        if (userController.text == "admin" && passController.text == "123") {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => Buttonbarutama()),
+                      onTap: () async { // Ubah jadi async
+                        try {
+                          // 1. Verifikasi Login
+                          final AuthResponse res = await supabase.auth.signInWithPassword(
+                            email: userController.text,
+                            password: passController.text,
                           );
-                        } else {
+
+                          // 2. Cek Role dari Database
+                          if (res.user != null) {
+                            final userData = await supabase
+                                .from('profil_warga')
+                                .select('role')
+                                .eq('id', res.user!.id)
+                                .single();
+
+                            if (userData['role'] == 'admin') {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (context) => MainPageAdmin()),
+                              );
+                            } else {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (context) => Buttonbarutama()),
+                              );
+                            }
+                          }
+                        } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("username atau password salah!")),
+                            SnackBar(content: Text("Email atau password salah!")),
                           );
                         }
                       },
@@ -114,7 +139,6 @@ class _LoginPageState extends State<LoginPage> {
             ),
             SizedBox(height: 50),
           ],
-          
         ),
       ),
       bottomNavigationBar: Padding(padding: const EdgeInsets.all(20.0),
