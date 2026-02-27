@@ -134,6 +134,7 @@ class _TambahBeritaPageState extends State<TambahBeritaPage> {
                 child: ElevatedButton(
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
+                      // 1. Cek apakah kategori sudah dipilih
                       if (selectedCategory == null) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text("Pilih kategori terlebih dahulu!")),
@@ -141,7 +142,15 @@ class _TambahBeritaPageState extends State<TambahBeritaPage> {
                         return;
                       }
 
-                      // Tampilkan loading dialog sederhana (Opsional tapi Best Practice)
+                      // 2. Cek apakah gambar sudah dipilih
+                      if (_imageFile == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Pilih gambar berita terlebih dahulu!")),
+                        );
+                        return;
+                      }
+
+                      // Tampilkan loading berputar
                       showDialog(
                         context: context, 
                         barrierDismissible: false, 
@@ -151,24 +160,37 @@ class _TambahBeritaPageState extends State<TambahBeritaPage> {
                       try {
                         final supabase = Supabase.instance.client;
                         
-                        // Logika INSERT (CREATE)
+                        // 3. Buat nama file gambar unik agar tidak bentrok
+                        final fileExtension = _imageFile!.path.split('.').last; 
+                        final fileName = '${DateTime.now().millisecondsSinceEpoch}.$fileExtension';
+
+                        // 4. Upload gambar ke Supabase Storage (ke bucket 'gambar berita')
+                        await supabase.storage.from('gambar_berita').upload(
+                          fileName, 
+                          _imageFile!, 
+                        );
+
+                        // 5. Ambil link URL dari gambar yang barusan di-upload
+                        final String imageUrl = supabase.storage.from('gambar_berita').getPublicUrl(fileName);
+
+                        // 6. Simpan judul, deskripsi, kategori, dan LINK GAMBAR ke database
                         await supabase.from('berita').insert({
                           'title': _judulController.text,
                           'description': _deskripsiController.text,
                           'category': selectedCategory,
-                          'image': 'https://via.placeholder.com/150', // Dummy image URL untuk kecepatan iterasi saat ini
+                          'image': imageUrl, // <-- Sekarang pakai link gambar asli, bukan dummy lagi!
                         });
 
-                        Navigator.pop(context); // Tutup loading dialog
-                        Navigator.pop(context); // Kembali ke Home Admin
+                        Navigator.pop(context); // Tutup loading
+                        Navigator.pop(context); // Kembali ke halaman sebelumnya
                         
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Berita berhasil ditambahkan!")),
+                          const SnackBar(content: Text("Berita dan gambar berhasil disimpan!")),
                         );
                       } catch (e) {
-                        Navigator.pop(context); // Tutup loading dialog
+                        Navigator.pop(context); // Tutup loading
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Terjadi kesalahan: $e")),
+                          SnackBar(content: Text("Gagal menyimpan: $e")),
                         );
                       }
                     }
@@ -178,7 +200,7 @@ class _TambahBeritaPageState extends State<TambahBeritaPage> {
                     style: GoogleFonts.poppins(
                       fontSize: 16, 
                       fontWeight: FontWeight.bold,
-                      color: Colors.white, // Sesuaikan warna jika perlu
+                      color: Colors.white,
                     ),
                   ),
                 ),

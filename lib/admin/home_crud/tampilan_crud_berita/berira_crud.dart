@@ -132,8 +132,7 @@ class _BeritaCrudState extends State<BeritaCrud> {
                               );
                             },
                           ),
-                        ],
-                      ),
+                        ],),
                     ],
                   ),
                 );

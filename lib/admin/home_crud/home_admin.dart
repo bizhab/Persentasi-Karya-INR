@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:persentasi_karya/admin/home_crud/tampilan_crud_berita/berira_crud.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeAdmin extends StatefulWidget {
   const HomeAdmin({super.key});
@@ -11,6 +12,22 @@ class HomeAdmin extends StatefulWidget {
 
 class _HomeAdminState extends State<HomeAdmin> {
   @override
+  Future<int> _getTotalWarga() async {
+    try {
+      final supabase = Supabase.instance.client;
+      
+      // Menggunakan fungsi count() agar lebih ringan (tidak perlu download semua data)
+      final response = await supabase
+          .from('profil_warga') // ---> PENTING: Ganti 'warga' dengan nama tabel user/wargamu di Supabase!
+          .select('id')
+          .count(CountOption.exact);
+          
+      return response.count ?? 0;
+    } catch (e) {
+      print("Error mengambil data: $e");
+      return 0; // Kembalikan 0 jika terjadi error
+    }
+  }
   Widget build(BuildContext context) {
     // Hapus 'const' di depan Scaffold
     return Scaffold(
@@ -108,13 +125,42 @@ class _HomeAdminState extends State<HomeAdmin> {
                               "Total Warga",
                               style: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 12),
                             ),
-                            Text(
-                              "1.240 Orang",
-                              style: GoogleFonts.poppins(
-                                color: Colors.black87,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            FutureBuilder<int>(
+                              future: _getTotalWarga(),
+                              builder: (context, snapshot) {
+                                // 1. Saat data sedang dimuat (Loading)
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return const SizedBox(
+                                    height: 20, 
+                                    width: 20, 
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  );
+                                }
+                                
+                                // 2. Jika terjadi error
+                                if (snapshot.hasError) {
+                                  return Text(
+                                    "Error",
+                                    style: GoogleFonts.poppins(
+                                      color: Colors.red,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  );
+                                }
+
+                                // 3. Jika data berhasil diambil
+                                final total = snapshot.data ?? 0;
+                                
+                                return Text(
+                                  "$total Orang", // Tampilkan angka dinamis dari database
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.black87,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
