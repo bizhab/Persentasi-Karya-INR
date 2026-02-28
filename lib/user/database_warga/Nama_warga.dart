@@ -123,7 +123,8 @@ class _DataWargaState extends State<DataWarga> {
                                     children: [
                                       const SizedBox(height: 10),
                                       Text(
-                                        _foundWarga[index]['role']?.toString().toUpperCase() ?? "WARGA", // Menggunakan Kolom Role jika kategori tdk ada
+                                        // Ubah 'role' menjadi 'status_warga'
+                                        _foundWarga[index]['status_warga']?.toString().toUpperCase() ?? "STATUS BELUM DIATUR", 
                                         style: const TextStyle(
                                             color: Color(0xFF970747),
                                             fontWeight: FontWeight.bold),

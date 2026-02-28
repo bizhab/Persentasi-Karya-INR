@@ -46,10 +46,12 @@ class _HomeUserState extends State<HomeUser> {
     // Logika Pemfilteran secara Lokal dari Data Supabase yg ditarik
     List<Map<String, dynamic>> filteredData = _allBerita.where((item) {
       bool matchesCategory = activeCategory.toUpperCase() == "SEMUA" ||
-          (item['kategori']?.toString().toUpperCase() == activeCategory.toUpperCase());
+          // Ubah 'kategori' menjadi 'category'
+          (item['category']?.toString().toUpperCase() == activeCategory.toUpperCase());
 
-      bool matchesSearch = (item['judul']?.toString().toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
-          (item['deskripsi']?.toString().toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
+      // Ubah 'judul' menjadi 'title' dan 'deskripsi' menjadi 'description'
+      bool matchesSearch = (item['title']?.toString().toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
+          (item['description']?.toString().toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
 
       return matchesCategory && matchesSearch;
     }).toList();
@@ -175,7 +177,7 @@ class _HomeUserState extends State<HomeUser> {
                                     ClipRRect(
                                       borderRadius: BorderRadius.circular(15),
                                       child: Image.network(
-                                        filteredData[index]['image_url'] ?? '', // Ambil field dari Database
+                                        filteredData[index]['image'] ?? '', // <-- Ubah 'image_url' jadi 'image'
                                         height: 150,
                                         width: double.infinity,
                                         fit: BoxFit.cover,
@@ -184,15 +186,15 @@ class _HomeUserState extends State<HomeUser> {
                                     ),
                                     const SizedBox(height: 10),
                                     Text(
-                                      filteredData[index]['kategori'] ?? '',
+                                      filteredData[index]['category'] ?? '', // <-- Ubah 'kategori' jadi 'category'
                                       style: const TextStyle(color: Color(0xFF970747), fontWeight: FontWeight.bold),
                                     ),
                                     Text(
-                                      filteredData[index]['judul'] ?? '',
+                                      filteredData[index]['title'] ?? '', // <-- Ubah 'judul' jadi 'title'
                                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                     ),
                                     Text(
-                                      filteredData[index]['deskripsi'] ?? '',
+                                      filteredData[index]['description'] ?? '', // <-- Ubah 'deskripsi' jadi 'description'
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(color: Colors.grey),
