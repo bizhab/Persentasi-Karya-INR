@@ -71,7 +71,7 @@ class DetailBerita extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: data['category']?.toUpperCase() == "DONASI" 
-          ? const DonationBottomBar() 
+          ? DonationBottomBar(dataBerita: data) 
           : null,
     );
   }

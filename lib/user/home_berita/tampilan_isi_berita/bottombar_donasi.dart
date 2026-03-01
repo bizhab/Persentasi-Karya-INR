@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'package:persentasi_karya/user/home_berita/tampilan_isi_berita/donasi/donasi.dart';
 
 class DonationBottomBar extends StatelessWidget {
-  const DonationBottomBar({super.key});
+  // 1. KITA BIKIN VARIABEL PENERIMA DISINI
+  final Map<String, dynamic> dataBerita;
+
+  // 2. WAJIBIN HALAMAN INDUK BUAT NGIRIM DATANYA
+  const DonationBottomBar({super.key, required this.dataBerita});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +24,7 @@ class DonationBottomBar extends StatelessWidget {
         ],
         borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
       ),
-      child: SafeArea( // Menjaga agar tidak terkena notch bawah pada HP modern
+      child: SafeArea( 
         child: Row(
           children: [
             Expanded(
@@ -46,7 +50,18 @@ class DonationBottomBar extends StatelessWidget {
             const SizedBox(width: 10),
             ElevatedButton(
               onPressed: () {
-                // Aksi donasi di sini
+                // 3. NAH DISINI BARU KITA PANGGIL NAVIGATORNYA
+                // Sekarang dia udah kenal sama dataBerita!
+                Navigator.push(
+                  context, 
+                  MaterialPageRoute(
+                    builder: (context) => BayarDonasiQris(
+                       judulBerita: dataBerita['title'] ?? 'Tanpa Judul', 
+                       // pastiin tipe datanya int buat ID, takutnya di db disimpen sbg string
+                       beritaId: dataBerita['id'] is int ? dataBerita['id'] : int.parse(dataBerita['id'].toString()),       
+                    )
+                  )
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF970747),
