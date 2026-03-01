@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart'; // Pastikan ini ada
 
 class BayarDonasiQris extends StatefulWidget {
   final String judulBerita;
@@ -14,28 +15,34 @@ class BayarDonasiQris extends StatefulWidget {
 }
 
 class _BayarDonasiQrisState extends State<BayarDonasiQris> {
-    
   String? urlQris;
   String? currOrderId;
   bool isLoding = false;
-  bool udahLunas = false; // Saklar buat mastiin pop-up cuma muncul 1x
+  bool udahLunas = false;
 
   TextEditingController jumlahCtrl = TextEditingController();
   TextEditingController namaCtrl = TextEditingController();
 
-  // FUNGSI BARU: Nembak ke Supabase Edge Function
+  // Fungsi untuk membuka link pembayaran di browser
+  Future<void> bukaUrlPembayaran() async {
+    if (urlQris != null) {
+      final Uri _url = Uri.parse(urlQris!);
+      if (!await launchUrl(_url, mode: LaunchMode.externalApplication)) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Tidak bisa membuka browser")));
+      }
+    }
+  }
+
   Future<void> generateQrisPakeBackend() async {
     if(jumlahCtrl.text.isEmpty || namaCtrl.text.isEmpty) {
-       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Isi nama n nominal dulu bos")));
+       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Isi nama dan nominal dulu")));
        return;
     }
 
     setState(() { isLoding = true; });
 
-     try {
-       // URL EDGE FUNCTION KAMU
+    try {
        var url = Uri.parse('https://qwpubtwhjogiwelonorv.supabase.co/functions/v1/payment_handler');
-       
        final String? currentUserId = Supabase.instance.client.auth.currentUser?.id;
 
        var respon = await http.post(
@@ -46,134 +53,80 @@ class _BayarDonasiQrisState extends State<BayarDonasiQris> {
              "jumlah": int.parse(jumlahCtrl.text),
              "judulBerita": widget.judulBerita,
              "beritaId": widget.beritaId,
-             "userId": currentUserId // oper id kalo ada
+             "userId": currentUserId
          })
        );
 
        if(respon.statusCode == 200){
           var data = jsonDecode(respon.body);
-            setState((){
-              urlQris = data['qris_url'];
-              currOrderId = data['order_id'];
-              isLoding = false;
-            });
-            
-            // JALANIN RADAR REALTIME NYA!
-            pantauDatabase();
+          setState((){
+            urlQris = data['qris_url'];
+            currOrderId = data['order_id'];
+            isLoding = false;
+          });
+          pantauDatabase();
        } else {
           setState(() { isLoding = false; });
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Gagal generate QRIS dari Backend")));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Gagal generate QRIS")));
        }
-     } catch (e){
-         print("Error bro: $e");
-         setState((){isLoding = false;});
-     }
+    } catch (e){
+       setState((){isLoding = false;});
+    }
   }
 
-  // FUNGSI RADAR: Mantau database, kalo sukses langsung munculin Pop-Up
   void pantauDatabase(){
      if(currOrderId == null) return;
-     
      Supabase.instance.client
      .from('donasi_qris')
      .stream(primaryKey: ['id'])
      .eq('order_id', currOrderId!)
      .listen((List<Map<String, dynamic>> data) {
-        if(data.isNotEmpty){
-           // Kalo status di db berubah jadi success, sikat!
-           if(data[0]['status'] == 'success' && !udahLunas){
+        if(data.isNotEmpty && data[0]['status'] == 'success' && !udahLunas){
               setState((){ udahLunas = true; });
-              
-              // TAMPILIN NOTIF POP-UP OTOMATIS
               showDialog(
                 context: context, 
                 barrierDismissible: false,
                 builder: (context) => AlertDialog(
                   title: Text("Alhamdulillah! 🎉"),
-                  content: Text("Donasi kamu sebesar Rp ${jumlahCtrl.text} udah masuk bro! Terima kasih banyak."),
+                  content: Text("Donasi sebesar Rp ${jumlahCtrl.text} telah diterima. Terima kasih!"),
                   actions: [
-                     TextButton(
-                       onPressed:(){ 
-                          Navigator.pop(context); // tutup dialog
-                          Navigator.pop(context); // balik ke halaman berita
-                       }, 
-                       child: Text("OK, Mantap")
-                     )
+                     TextButton(onPressed:(){ Navigator.pop(context); Navigator.pop(context); }, child: Text("OK"))
                   ]
                 )
               );
-           }
         }
      });
   }
 
-  @override
+  @override 
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Donasi QRIS", style: TextStyle(color: Colors.white),), backgroundColor: Colors.blue,),
+      appBar: AppBar(title: Text("Donasi QRIS", style: TextStyle(color: Colors.white)), backgroundColor: Colors.blue),
       body: SingleChildScrollView( 
         padding: EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              padding: EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                 color: Colors.blue[50],
-                 borderRadius: BorderRadius.circular(10)
-              ),
-              child: Column(
-                children: [
-                  Text("Tujuan Donasi:", style: TextStyle(color: Colors.grey)),
-                  SizedBox(height:5),
-                  Text(widget.judulBerita, 
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)
-                  ),
-                ]
-              )
+            Text("Tujuan: ${widget.judulBerita}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            SizedBox(height: 20),
+            TextField(controller: namaCtrl, decoration: InputDecoration(labelText: "Nama", border: OutlineInputBorder())),
+            SizedBox(height: 15),
+            TextField(controller: jumlahCtrl, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: "Nominal (Rp)", border: OutlineInputBorder())),
+            SizedBox(height: 25),
+            ElevatedButton(
+              onPressed: isLoding ? null : generateQrisPakeBackend,
+              child: isLoding ? CircularProgressIndicator() : Text("Tampilkan QRIS"),
             ),
-            SizedBox(height: 25,),
-
-            TextField(controller: namaCtrl, decoration: InputDecoration(labelText: "Nama Dermawan", border: OutlineInputBorder())),
-            SizedBox(height: 15,),
-             TextField(
-               controller: jumlahCtrl, 
-               keyboardType: TextInputType.number,
-               decoration: InputDecoration(labelText: "Nominal (Rp)", border: OutlineInputBorder())
-             ),
-             SizedBox(height: 25),
-             
-             Container(
-               height: 50,
-               child: ElevatedButton(
-                 style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                 // TOMBOLNYA SEKARANG MANGGIL FUNGSI BACKEND
-                 onPressed: isLoding ? null : () {
-                    generateQrisPakeBackend();
-                 },
-                 child: isLoding ? CircularProgressIndicator(color: Colors.white,) : Text("Tampilkan QRIS", style: TextStyle(fontSize: 16, color: Colors.white))
+            if(urlQris != null && !udahLunas) ...[
+               SizedBox(height: 30),
+               Center(child: Image.network(urlQris!, height: 260, width: 260)),
+               TextButton.icon(
+                 onPressed: bukaUrlPembayaran,
+                 icon: Icon(Icons.open_in_browser),
+                 label: Text("Bayar via Browser / Aplikasi Bank"),
                ),
-             ),
-
-             SizedBox(height: 30),
-
-             if(urlQris != null && !udahLunas)
-               Column(
-                 children: [
-                    Text("Scan QR Code di Bawah Ini:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),
-                    SizedBox(height: 15,),
-                    Container(
-                      padding: EdgeInsets.all(10),
-                      decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(10)),
-                      child: Image.network(urlQris!, height: 260, width: 260, fit: BoxFit.contain,),
-                    ),
-                     SizedBox(height: 20),
-                     Text("Status: Menunggu Pembayaran...", textAlign: TextAlign.center, style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),),
-                     SizedBox(height: 10),
-                     Text("Catatan: Pembayaran ini dalam mode Sandbox (Ujicoba).", textAlign: TextAlign.center, style: TextStyle(color: Colors.red),)
-                 ]
-               )
+               Text("Status: Menunggu Pembayaran...", style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+            ]
           ]
         ),
       )
