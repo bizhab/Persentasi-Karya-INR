@@ -22,7 +22,7 @@ class _DataWargaState extends State<DataWarga> {
     super.initState();
     _fetchWarga(); // Panggil Fungsi saat Halaman Dimuat
   }
-
+ 
   // --- FUNGSI AMBIL DATA DARI SUPABASE ---
   Future<void> _fetchWarga() async {
     try {
