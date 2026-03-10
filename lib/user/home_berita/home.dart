@@ -200,9 +200,12 @@ Future<void> _markAsRead(String newsId) async {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Stack(
-                              children: [
-                                // Lapisan 1: Konten Utama (Gambar & Teks)
-                                ColorFiltered(
+                            children: [
+                              // 1. Konten Utama
+                              // Gunakan Opacity atau ColorFiltered untuk meredupkan konten jika sudah dibaca
+                              Opacity(
+                                opacity: isRead ? 0.6 : 1.0, // Membuat konten agak pudar jika sudah dibaca
+                                child: ColorFiltered(
                                   colorFilter: isRead 
                                       ? const ColorFilter.mode(Colors.grey, BlendMode.saturation)
                                       : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
@@ -214,7 +217,7 @@ Future<void> _markAsRead(String newsId) async {
                                         ClipRRect(
                                           borderRadius: BorderRadius.circular(15),
                                           child: Image.network(
-                                            berita['image'] ?? '', //
+                                            berita['image'] ?? '',
                                             height: 150,
                                             width: double.infinity,
                                             fit: BoxFit.cover,
@@ -224,21 +227,21 @@ Future<void> _markAsRead(String newsId) async {
                                         ),
                                         const SizedBox(height: 10),
                                         Text(
-                                          berita['category'] ?? '', //
+                                          berita['category'] ?? '',
                                           style: const TextStyle(
                                             color: Color(0xFF970747), 
                                             fontWeight: FontWeight.bold
                                           ),
                                         ),
                                         Text(
-                                          berita['title'] ?? '', //
+                                          berita['title'] ?? '',
                                           style: const TextStyle(
                                             fontSize: 18, 
                                             fontWeight: FontWeight.bold
                                           ),
                                         ),
                                         Text(
-                                          berita['description'] ?? '', //
+                                          berita['description'] ?? '',
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                           style: const TextStyle(color: Colors.grey),
@@ -247,22 +250,20 @@ Future<void> _markAsRead(String newsId) async {
                                     ),
                                   ),
                                 ),
-                                // Lapisan 2: Overlay Gelap (Hanya muncul jika isRead true)
-                                if (isRead)
-                                  Positioned.fill(
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        // Hitam transparan untuk efek "abu-abu kegelapan"
-                                        color: Colors.black.withOpacity(0.3), 
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                    ),
+                              ),
+                              // 2. Overlay Abu-abu (Hanya jika isRead)
+                              if (isRead)
+                                Positioned.fill(
+                                  child: Container(
+                                    // Menggunakan warna hitam transparan tipis agar terlihat "disabled"
+                                    color: Colors.black.withOpacity(0.05), 
                                   ),
-                              ],
-                            ),
+                                ),
+                            ],
                           ),
-                        );
-                      },
+                        ),
+                      );
+                    },
                     )
               ],
             ),

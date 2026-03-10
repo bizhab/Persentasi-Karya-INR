@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:persentasi_karya/function/format_rupiah.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class StatistikPage extends StatefulWidget {
@@ -40,6 +41,9 @@ class _StatistikPageState extends State<StatistikPage> {
       return {'lokal': 0, 'pindahan': 0};
     }
   }
+
+  
+
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -110,41 +114,71 @@ class _StatistikPageState extends State<StatistikPage> {
             Text("Warga Berdonasi", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 15),
 
-            Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[200]!)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Donasi Masjid", style: TextStyle(color: Color(0xFF970747), fontSize: 12, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Budi Santoso", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
-                      Text("Rp 100.000", style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold))])])),
+            StreamBuilder<List<Map<String, dynamic>>>(
+              // Mengambil data secara REALTIME dari tabel donasi_qris
+              stream: Supabase.instance.client
+                  .from('donasi_qris')
+                  .stream(primaryKey: ['id'])
+                  .eq('status', 'success')
+                  .order('created_at', ascending: false)
+                  .limit(10),
+              builder: (context, snapshot) {
+                // Tampilkan loading HANYA saat pertama kali dibuka
+                if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-            Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[200]!)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Donasi Anak Yatim", style: TextStyle(color: Color(0xFF970747), fontSize: 12, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Siti Aminah", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
-                      Text("Rp 50.000", style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold))])]))])),
-    );
+                if (snapshot.hasError) {
+                  return const Center(child: Text("Gagal memuat donasi", style: TextStyle(color: Colors.red)));
+                }
+
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: Center(child: Text("Belum ada riwayat donasi yang berhasil.", style: TextStyle(color: Colors.grey))),
+                  );
+                }
+
+                // Ambil datanya
+                final dataDonasi = snapshot.data!;
+
+                return Column(
+                  children: dataDonasi.map((donasi) {
+                    final String nama = donasi['nama_donatur'] ?? 'Hamba Allah';
+                    final String judul = donasi['judul_berita'] ?? donasi['judulBerita'] ?? 'Donasi Umum';
+                    final int jumlah = donasi['jumlah'] ?? 0;
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey[200]!)
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(judul, style: const TextStyle(color: Color(0xFF970747), fontSize: 12, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(nama, style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+                              Text(formatRupiah(jumlah), style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold))
+                            ]
+                          )
+                        ]
+                      )
+                    );
+                  }).toList(),
+                );
+              },
+            )
+          ]
+        )
+      ),
+
+    );        
   }
 }

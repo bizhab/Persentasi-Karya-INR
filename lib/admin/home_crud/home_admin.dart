@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:persentasi_karya/admin/home_crud/tampilan_crud_berita/berira_crud.dart';
+import 'package:persentasi_karya/function/format_rupiah.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeAdmin extends StatefulWidget {
@@ -92,13 +93,35 @@ class _HomeAdminState extends State<HomeAdmin> {
                               "Donasi Bulan Ini",
                               style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12),
                             ),
-                            Text(
-                              "Rp 2.500.000",
-                              style: GoogleFonts.poppins(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            // --- PASTE KODE FUTUREBUILDER DI SINI ---
+                            FutureBuilder<int>(
+                              future: getTotalDonasiBulanIni(), 
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return const SizedBox(
+                                    height: 20, // Tinggi lingkaran
+                                    width: 20,  // Lebar lingkaran
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2, // Ketebalan garis lingkaran
+                                      color: Colors.white, // Warna lingkaran (disamakan dengan warna teks sebelumnya)
+                                    ),
+                                  );
+                                }
+
+                                if (snapshot.hasError) {
+                                  return Text("Rp 0", style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold));
+                                }
+
+                                final total = snapshot.data ?? 0;
+                                return Text(
+                                  formatRupiah(total), 
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
