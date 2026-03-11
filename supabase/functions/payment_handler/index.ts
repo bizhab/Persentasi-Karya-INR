@@ -7,9 +7,9 @@ const corsHeaders = {
 }
 
 // 1. KONFIGURASI KEY
-const midtransServerKey = "Mid-server-2kXnWuX6LBIPKLehKDrGn5zB" 
-const supabaseUrl = "https://qwpubtwhjogiwelonorv.supabase.co"
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3cHVidHdoam9naXdlbG9ub3J2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTg1OTI1MiwiZXhwIjoyMDg3NDM1MjUyfQ.ATIAATAdPe6Iy2xaSrvRRfHV6ur057BUPO3eBpLuXrI" 
+const midtransServerKey = Deno.env.get("MIDTRANS_SERVER_KEY") ?? "";
+const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
 Deno.serve(async (req) => {
   // Handle CORS Preflight
